@@ -16,4 +16,4 @@ class LoginLogout(APIView):
     '''
     
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        pass

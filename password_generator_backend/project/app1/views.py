@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from .serializers import LoginLogoutSerializer,PasswordListSerializer,SignInNewUserSerializer
 from django.contrib.auth import login,logout
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.cache import cache
 import random
 from rest_framework.permissions import IsAuthenticated
 from .models import Password
@@ -20,7 +19,9 @@ def get_tokens_for_user(user):
 
 class LoginLogout(APIView):
     '''
-    
+    This api for sign(in or off),
+    credentials : [email,password,confirm_password]
+    message : confirmation for sign(in or off)
     '''
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -45,7 +46,12 @@ class LoginLogout(APIView):
         
 class PasswordGenerator(APIView):
     '''
-    
+    Randomilly generate new password
+    length of password : 20
+    askey value : 65 to 90
+    get method generate password,
+    post method save that password to database,
+     
     '''
     
     permission_classes = [IsAuthenticated]
@@ -53,7 +59,7 @@ class PasswordGenerator(APIView):
     def get(self, request, *args, **kwargs):
         password = str()
         for x in range(20):
-            ch = chr(random.randint(65,91))
+            ch = chr(random.randint(65,90))
             password+=ch
         request.session['password'] = password
         return Response({
@@ -77,7 +83,7 @@ class PasswordGenerator(APIView):
 
 class PasswordList(generics.ListAPIView):
     '''
-    
+    show all saved password in database
     '''
     queryset = Password.objects.all()
     serializer_class = PasswordListSerializer
@@ -85,8 +91,16 @@ class PasswordList(generics.ListAPIView):
     
     
     
-class SignInNewUser(APIView):
     
+class SignInNewUser(APIView):
+    '''
+    Sign in new user
+    credentials : [username,email, password, password2]
+    credentials validation proper formate cheking,
+    password save to database encryption form
+    message : confirmation about signin
+    response : user email
+    '''
     def post(self, request, *args, **kwargs):
         serializer = SignInNewUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -95,3 +109,4 @@ class SignInNewUser(APIView):
             'message':'Sign In Successfully Completed',
             'email':serializer.data.get('email')
         },status=status.HTTP_200_OK)
+        
